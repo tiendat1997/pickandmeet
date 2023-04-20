@@ -12,7 +12,7 @@
     "npm": ">=7"
   },
   "gitHooks": {
-    "pre-commit": "lint-staged" 
+    "pre-commit": "lint-staged"
   },
   "lint-staged": {
     "*.ts": [
@@ -213,5 +213,15 @@
     "vite-plugin-radar": "0.6.0",
     "vue-tsc": "1.0.20",
     "yorkie": "2.0.0"
-  }  
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "postcss",
+        "shiki",
+        "react-dom",
+        "react"
+      ]
+    }
+  }
 }
