@@ -42,6 +42,7 @@ declare module 'vue-router/auto/routes' {
     '/auth': RouteRecordInfo<'/auth', '/auth', Record<never, never>, Record<never, never>>,
     '/authorize': RouteRecordInfo<'/authorize', '/authorize', Record<never, never>, Record<never, never>>,
     '/authorize/': RouteRecordInfo<'/authorize/', '/authorize', Record<never, never>, Record<never, never>>,
+    '/map': RouteRecordInfo<'/map', '/map', Record<never, never>, Record<never, never>>,
     '/map/[id]': RouteRecordInfo<'/map/[id]', '/map/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
   }
 }

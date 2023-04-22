@@ -41,19 +41,16 @@ watch(coords, (newPosition) => {
 </script>
 
 <template>
-  <AppLayout nowrap>
-    <!-- Content Wrapper -->
-    <MapsDashboard
-      v-if="currentPosition?.latitude && currentPosition?.longitude"
-      :room-detail="roomDetail"
-      :current-position="currentPosition"
-    />
-    <IoT
-      v-if="
-        currentPosition?.latitude && currentPosition?.longitude && !!roomDetail.questionId
-      "
-      :room-detail="roomDetail"
-      :current-position="currentPosition"
-    />
-  </AppLayout>
+  <MapsDashboard
+    v-if="currentPosition?.latitude && currentPosition?.longitude"
+    :room-detail="roomDetail"
+    :current-position="currentPosition"
+  />
+  <IoT
+    v-if="
+      currentPosition?.latitude && currentPosition?.longitude && !!roomDetail.questionId
+    "
+    :room-detail="roomDetail"
+    :current-position="currentPosition"
+  />
 </template>
