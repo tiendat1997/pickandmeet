@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import type { VTagColor } from '/@src/components/base/tags/VTag.vue'
 import type { VAvatarProps } from '/@src/components/base/avatar/VAvatar.vue'
+import { toFormValidator } from '@vee-validate/zod'
+import { useForm } from 'vee-validate'
+import { z as zod } from 'zod'
+import { useNotyf } from '/@src/composable/useNotyf'
+import { useQuestionStore } from '/@src/stores/questions'
+
 // import * as listData from './data/view-list-v1'
 
 export interface UserData extends VAvatarProps {
@@ -30,7 +36,28 @@ const props = withDefaults(
   }
 )
 
+const validationSchema = toFormValidator(
+  zod.object({
+    questionName: zod.string({
+      required_error: 'Question Name is required!',
+    }),
+  })
+)
+
+const questionStore = useQuestionStore()
+const notyf = useNotyf()
+const { handleSubmit, resetForm } = useForm({
+  validationSchema,
+  initialValues: {
+    questionName: '',
+  },
+})
+
 const filters = ref('')
+import { ref } from 'vue'
+
+const isCreatingQuestion = ref(false)
+const newQuestionModalOpen = ref(false)
 
 const filteredData = computed(() => {
   if (!filters.value) {
@@ -39,6 +66,25 @@ const filteredData = computed(() => {
     return props.questions.filter((item: any) => {
       return item.question.match(new RegExp(filters.value, 'i'))
     })
+  }
+})
+
+const closeNewQuestionModal = () => {
+  newQuestionModalOpen.value = false
+  resetForm()
+}
+
+const onCreateQuestion = handleSubmit(async (values) => {
+  console.log('handleCreateQuestion values')
+  console.table(values)
+  isCreatingQuestion.value = true
+  const data = await questionStore.addNewQuestion(values)
+  if (data) {
+    notyf.success('Welcome, Erik Kovalsky')
+    isCreatingQuestion.value = false
+    newQuestionModalOpen.value = false
+    questionStore.fetchQuestions()
+    resetForm()
   }
 })
 </script>
@@ -62,7 +108,12 @@ const filteredData = computed(() => {
       </div>
 
       <div class="buttons">
-        <VButton color="primary" icon="fas fa-plus" elevated href="/app/new-question">
+        <VButton
+          color="primary"
+          icon="fas fa-plus"
+          elevated
+          @click="newQuestionModalOpen = true"
+        >
           New
         </VButton>
         <VButton color="primary" icon="fas fa-users" elevated> Join </VButton>
@@ -156,6 +207,40 @@ const filteredData = computed(() => {
         :max-links-displayed="5"
       />
     </div>
+
+    <VModal
+      :open="newQuestionModalOpen"
+      title="New Question"
+      size="medium"
+      actions="right"
+      @close="closeNewQuestionModal"
+    >
+      <template #content>
+        <form @submit="onCreateQuestion">
+          <VField id="questionName" v-slot="{ field }">
+            <VControl icon="feather:hash">
+              <VInput
+                type="text"
+                placeholder="Raise your question to team up"
+                autocomplete="name"
+              />
+              <p v-if="field?.errors?.value?.length" class="help is-danger">
+                {{ field.errors?.value?.join(', ') }}
+              </p>
+            </VControl>
+          </VField>
+        </form>
+      </template>
+      <template #action>
+        <VButton
+          :loading="isCreatingQuestion"
+          color="primary"
+          raised
+          @click.prevent="onCreateQuestion"
+          >Create</VButton
+        >
+      </template>
+    </VModal>
   </div>
 </template>
 
