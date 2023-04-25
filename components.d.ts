@@ -17,6 +17,7 @@ declare module '@vue/runtime-core' {
     DashboardsSubsidebar: typeof import('./src/layouts/sidebar-subsidebar/DashboardsSubsidebar.vue')['default']
     FlightResultsDropdown: typeof import('./src/components/partials/dropdowns/FlightResultsDropdown.vue')['default']
     FormAddQuestion: typeof import('./src/components/pages/questions/FormAddQuestion.vue')['default']
+    Invitation: typeof import('./src/components/pages/invitation/index.vue')['default']
     IoT: typeof import('./src/components/pages/map/IoT.vue')['default']
     'IoT.old': typeof import('./src/components/pages/map/IoT.old.vue')['default']
     LandingEmptyNavigation: typeof import('./src/components/partials/landing/LandingEmptyNavigation.vue')['default']

@@ -4,15 +4,15 @@ import { useHead } from '@vueuse/head'
 import { useViewWrapper } from '/@src/stores/viewWrapper'
 
 const viewWrapper = useViewWrapper()
-viewWrapper.setPageTitle('Main Dashboard')
+viewWrapper.setPageTitle('Invitation')
 
 useHead({
-  title: 'Authorized Dashboard - My app',
+  title: 'Invitation Page',
 })
 </script>
 
 <template>
   <div class="page-content-inner">
-    <span>...</span>
+    <span>Hello Kitty Luon</span>
   </div>
 </template>

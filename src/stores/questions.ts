@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
-// Import axios to make HTTP requests
 import { useGeolocation } from '@vueuse/core'
 import { useApi } from '../composable/useApi'
-
 const geoLocation = useGeolocation()
 
 export const useQuestionStore = defineStore('questions', {
@@ -35,6 +33,7 @@ export const useQuestionStore = defineStore('questions', {
             longitude: coords.longitude,
             latitude: coords.latitude,
           },
+          userInfo: values.userInfo,
         }
         const api = useApi()
         const data = await api.post('/questions', payload)

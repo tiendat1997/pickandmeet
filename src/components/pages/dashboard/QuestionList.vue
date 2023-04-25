@@ -6,6 +6,7 @@ import { useForm } from 'vee-validate'
 import { z as zod } from 'zod'
 import { useNotyf } from '/@src/composable/useNotyf'
 import { useQuestionStore } from '/@src/stores/questions'
+import { useAuth0 } from '@auth0/auth0-vue'
 
 // import * as listData from './data/view-list-v1'
 
@@ -43,7 +44,8 @@ const validationSchema = toFormValidator(
     }),
   })
 )
-
+const { user } = useAuth0()
+const { copy } = useClipboard()
 const questionStore = useQuestionStore()
 const notyf = useNotyf()
 const { handleSubmit, resetForm } = useForm({
@@ -78,7 +80,7 @@ const onCreateQuestion = handleSubmit(async (values) => {
   console.log('handleCreateQuestion values')
   console.table(values)
   isCreatingQuestion.value = true
-  const data = await questionStore.addNewQuestion(values)
+  const data = await questionStore.addNewQuestion({ ...values, userInfo: user.value })
   if (data) {
     notyf.success('Welcome, Erik Kovalsky')
     isCreatingQuestion.value = false
@@ -158,10 +160,23 @@ const onCreateQuestion = handleSubmit(async (values) => {
                 />
                 <div class="meta-left">
                   <h3>{{ item.question }}</h3>
-                  <span>
-                    <i aria-hidden="true" class="iconify" data-icon="feather:clock"></i>
-                    <span>{{ item.created }}</span>
-                  </span>
+                  <VButton
+                    v-if="item.invitationCode"
+                    rounded
+                    :style="{ marginTop: '8px' }"
+                    size="small"
+                    @click="
+                      copy('http://localhost:3000/invitation/' + item.invitationCode)
+                    "
+                  >
+                    <i
+                      :style="{ marginRight: '4px' }"
+                      aria-hidden="true"
+                      data-icon="feather:link"
+                      class="iconify"
+                    />
+                    <span>Invitation Link</span>
+                  </VButton>
                 </div>
                 <div class="meta-right">
                   <div class="tags">
