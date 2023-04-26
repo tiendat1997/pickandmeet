@@ -1,7 +1,9 @@
 <template>
   <div class="marker-content">
     <img src="/@src/assets/cafe-icon.png" alt="location-icon-img" />
-    <VTag v-if="!!count" color="solid" :label="count" />
+    <VTag v-if="!!count" color="solid"
+      >{{ count }} vote<span v-if="count > 1">s</span></VTag
+    >
   </div>
 </template>
 
@@ -11,9 +13,7 @@ export default {
   props: {
     count: Number,
   },
-  mounted() {
-    // CUSTOM MARKER ON MOUNTED
-  },
+  mounted() {},
   methods: {},
 }
 </script>

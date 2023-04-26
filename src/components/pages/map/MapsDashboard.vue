@@ -36,6 +36,8 @@ const popup = shallowRef<Popup>()
 const geocoder = shallowRef<any>()
 const bounds: any = ref<any>()
 const globalMarkers: any = ref<any>({})
+const globalMemberMarkers: any = ref<any>({})
+const votePopupRef: any = shallowRef<Popup>()
 
 const getFeatures: any = computed(() => {
   return roomStore.getFeatures
@@ -65,7 +67,7 @@ function loadFeatures() {
 
     // Create popup
     const divElement = document.createElement('div')
-    const popup = new mapboxgl.Popup({ offset: 5 }).setDOMContent(divElement)
+    votePopupRef.value = new mapboxgl.Popup({ offset: 5 }).setDOMContent(divElement)
     const coordinates = {
       lng: feature.coordinates[0],
       lat: feature.coordinates[1],
@@ -76,7 +78,7 @@ function loadFeatures() {
     // make a marker for each feature and add it to the map
     const marker = new mapboxgl.Marker(markerEl)
       .setLngLat(feature.coordinates)
-      .setPopup(popup)
+      .setPopup(votePopupRef.value)
       .addTo(map.value)
 
     // Remove old marker from the map
@@ -100,7 +102,9 @@ function loadFeatures() {
       category: feature.properties.category,
       displayAddress: feature.properties.displayAddress,
       coordinates: coordinates,
-      closePopup: popup.remove,
+      submitVote: roomStore.submitVote,
+      submitRemoveVote: roomStore.submitRemoveVote,
+      closePopup: votePopupRef.value.remove,
       isVote: !(feature?.userIds ?? []).includes(userId),
     }).mount(divElement)
   }
@@ -224,13 +228,22 @@ watch(
     for (const memberLocation of members) {
       console.log('generateMarkers -> ', memberLocation)
       const coordinates = memberLocation.geoJson.coordinates
-      const isCurrent = getCurrentUserId.value === memberLocation.uid // user.sub === memberLocation.uid;
-      new mapboxgl.Marker({
+      const memberId = memberLocation.uid
+      const isCurrent = getCurrentUserId.value === memberId // user.sub === memberLocation.uid;
+      const oldMarker = globalMemberMarkers[memberId]
+
+      const marker = new mapboxgl.Marker({
         color: isCurrent ? 'red' : 'black',
       })
         .setLngLat(coordinates)
         .addTo(map.value)
 
+      // Remove old marker from the map
+      if (oldMarker) {
+        oldMarker.remove()
+      }
+
+      globalMemberMarkers[memberId] = marker
       if (!bounds.value) {
         bounds.value = new mapboxgl.LngLatBounds(coordinates, coordinates)
       } else {

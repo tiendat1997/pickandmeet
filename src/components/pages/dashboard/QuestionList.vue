@@ -118,7 +118,6 @@ const onCreateQuestion = handleSubmit(async (values) => {
         >
           New
         </VButton>
-        <VButton color="primary" icon="fas fa-users" elevated> Join </VButton>
       </div>
     </div>
 
