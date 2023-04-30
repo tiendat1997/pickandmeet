@@ -16,6 +16,9 @@ export const useRoomStore = defineStore('room', {
     getQuestionId(state) {
       return state.questionId
     },
+    getMembers(state) {
+      return state.members
+    },
     getRoomDetail(state) {
       return {
         members: state.members,
@@ -27,6 +30,31 @@ export const useRoomStore = defineStore('room', {
     },
     getVotes(state) {
       return Object.values(state.votes ?? {}) ?? []
+    },
+    getLocations(state) {
+      const features = (state.nearByLocations?.features ?? []).map((item: any) => {
+        return {
+          type: 'Feature',
+          properties: {
+            name: 'Fast Pizza',
+            logo: '/images/icons/logos/fastpizza.svg',
+            distance: 0.3,
+            openingCount: '6pm',
+            phone: '+1 555 456-5659',
+            website: 'https://huro.cssninja.io',
+            description:
+              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+            ...item.properties,
+          },
+          geometry: item.geometry,
+        }
+      })
+      const locations = {
+        type: 'FeatureCollection',
+        features: features,
+      }
+
+      return locations
     },
     getFeatures(state) {
       const existingVotes = state.getVotes

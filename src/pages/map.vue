@@ -12,15 +12,17 @@ const layoutSwitcher = useLayoutSwitcher()
 </script>
 
 <template>
-  <!-- Content Wrapper -->
-  <RouterView v-slot="{ Component }">
-    <Transition name="fade-fast" mode="out-in">
-      <component
-        :is="Component"
-        :v-if="!isLoading"
-        v-bind="layoutSwitcher.dynamicLayoutProps"
-        nowrap
-      />
-    </Transition>
-  </RouterView>
+  <AppLayout :is="layoutSwitcher.dynamicLayoutComponent" nowrap>
+    <!-- Content Wrapper -->
+    <RouterView v-slot="{ Component }">
+      <Transition name="fade-fast" mode="out-in">
+        <component
+          :is="Component"
+          :v-if="!isLoading"
+          v-bind="layoutSwitcher.dynamicLayoutProps"
+          nowrap
+        />
+      </Transition>
+    </RouterView>
+  </AppLayout>
 </template>
