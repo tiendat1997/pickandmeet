@@ -8,6 +8,8 @@ import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
 const themeColors = useThemeColors()
 
 const props = defineProps<{
+  roomDetail: any
+  coords: any
   reversed?: boolean
 }>()
 
@@ -235,11 +237,6 @@ function loadLayers() {
   })
 }
 
-function selectFeature(feature: any) {
-  selectedFeature.value = undefined
-  selectedFeature.value = feature
-}
-
 onMounted(() => {
   Promise.all([
     import('mapbox-gl').then((m) => m.default),
@@ -296,25 +293,6 @@ watchPostEffect(() => {
   // const logo = selectedFeature.value.properties.logo
   // const openingCount = selectedFeature.value.properties.openingCount
   // const description = selectedFeature.value.properties.description
-
-  console.log('zooming at: ', properties, coordinates)
-
-  // Ensure that if the map is zoomed out such that multiple
-  // copies of the feature are visible, the popup appears
-  // over the copy being pointed to.
-  if (selectedFeatureLatLng.value) {
-    while (Math.abs(selectedFeatureLatLng.value.lng - coordinates[0]) > 180) {
-      coordinates[0] += selectedFeatureLatLng.value.lng > coordinates[0] ? 360 : -360
-    }
-  }
-
-  map.value.flyTo({
-    center: coordinates,
-    zoom: 15,
-    bearing: 0,
-    essential: true, // this animation is considered essential with respect to prefers-reduced-motion
-  })
-
   if (popup.value) {
     popup.value.remove()
   }
@@ -353,7 +331,6 @@ watch(
       <div ref="mapElement" class="map-section"></div>
       <div ref="geocoderElement" class="geocoder"></div>
       <div ref="popupElement" style="display: none; visibility: hidden">
-        Test
         <MapMarker
           v-if="selectedFeature"
           :logo="selectedFeature.properties.logo"
@@ -361,60 +338,6 @@ watch(
           :opening-count="selectedFeature.properties.openingCount"
           :description="selectedFeature.properties.description"
         />
-      </div>
-      <div class="content-section">
-        <slot name="header"></slot>
-        <div class="content-section-body" data-simplebar>
-          <!--Title-->
-          <h4 class="content-section-title">Recent Locations</h4>
-
-          <!--Map Box-->
-          <div
-            v-for="(feature, key) in locations.features"
-            :key="key"
-            class="box map-box"
-            :class="[selectedFeatureName === feature.properties.name && 'is-active']"
-            tabindex="0"
-            @keydown.space.prevent="selectFeature(feature)"
-            @click="selectFeature(feature)"
-          >
-            <div class="map-box-place">
-              <div class="map-box-header">
-                <VBlock
-                  :title="feature.properties.name"
-                  :subtitle="`Open until ${feature.properties.openingCount}`"
-                  center
-                >
-                  <template #icon>
-                    <VAvatar size="small" :picture="feature.properties.logo" />
-                  </template>
-                </VBlock>
-              </div>
-              <div class="map-box-body">
-                <p>
-                  {{ feature.properties.description }}
-                </p>
-              </div>
-              <div class="map-box-actions">
-                <div class="rating">
-                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
-                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
-                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
-                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
-                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
-                </div>
-                <div class="actions">
-                  <div class="action">
-                    <i aria-hidden="true" class="iconify" data-icon="feather:flag"></i>
-                    <span class="dark-inverted">
-                      {{ feature.properties.distance }} mile
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -448,99 +371,7 @@ watch(
 
     .map-section {
       position: relative;
-      width: calc(100% - 380px);
-    }
-
-    .content-section {
-      width: 380px;
-      background: var(--white);
-
-      .content-section-header {
-        height: 80px;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        padding: 0 2rem;
-
-        ~ .content-section-body {
-          height: calc(100% - 80px);
-          padding: 0 2rem 2rem;
-        }
-      }
-
-      .content-section-body {
-        height: 100%;
-        overflow-y: auto;
-        padding: 2rem;
-
-        .content-section-title {
-          font-family: var(--font);
-          font-size: 0.8rem;
-          color: var(--light-text);
-          text-transform: uppercase;
-          margin-bottom: 0.75rem;
-        }
-
-        .map-box {
-          border: 1px solid var(--border);
-          border-radius: 0.75rem;
-          box-shadow: none;
-          cursor: pointer;
-          transition: border 0.3s, box-shadow 0.3s;
-
-          &:focus-visible {
-            outline-offset: var(--accessibility-focus-outline-offset);
-            outline-width: var(--accessibility-focus-outline-width);
-            outline-style: var(--accessibility-focus-outline-style);
-            outline-color: var(--accessibility-focus-outline-color);
-          }
-
-          &.is-active {
-            border-color: var(--primary);
-            box-shadow: var(--light-box-shadow);
-          }
-
-          .map-box-body {
-            padding: 0.5rem 0;
-
-            p {
-              font-size: 0.95rem;
-            }
-          }
-
-          .map-box-actions {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            .rating {
-              i {
-                font-size: 0.9rem;
-                color: var(--widget-grey);
-
-                &.highlighted {
-                  color: var(--yellow);
-                }
-              }
-            }
-
-            .action {
-              display: flex;
-              align-items: center;
-              font-family: var(--font);
-              font-size: 0.9rem;
-              color: var(--dark-text);
-
-              svg {
-                height: 16px;
-                width: 16px;
-                margin-right: 0.25rem;
-                color: var(--light-text);
-              }
-            }
-          }
-        }
-      }
+      width: 100%;
     }
   }
 }
@@ -665,20 +496,6 @@ watch(
 .is-dark {
   .dashboard-map-wrapper {
     .dashboard-map-wrapper-inner {
-      .content-section {
-        background: var(--dark-sidebar-dark-3);
-
-        .content-section-body {
-          .map-box {
-            background: var(--dark-sidebar-light-3);
-            border-color: var(--dark-sidebar-light-10);
-
-            &.is-active {
-              border-color: var(--primary) !important;
-            }
-          }
-        }
-      }
     }
   }
 
@@ -775,12 +592,8 @@ watch(
       }
 
       .map-section {
-        min-height: 30vh;
+        height: 100vh;
         width: 100%;
-      }
-
-      .content-section {
-        height: 70vh;
       }
     }
   }
@@ -809,12 +622,7 @@ watch(
       }
 
       .map-section {
-        min-height: 30vh;
-        width: 100%;
-      }
-
-      .content-section {
-        height: calc(70vh - 60px);
+        min-height: 100%;
         width: 100%;
       }
     }

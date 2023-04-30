@@ -9,7 +9,7 @@ const viewWrapper = useViewWrapper()
 viewWrapper.setPageTitle('Invitation')
 const invitationStore = useInvitationStore()
 const route = useRoute()
-const { coords, resume } = useGeolocation()
+const { coords } = useGeolocation()
 
 const currentPosition = ref<{ longitude: number; latitude: number } | null>(null)
 
@@ -32,7 +32,6 @@ watch(coords, (newPosition) => {
 
 onMounted(() => {
   console.log('invitation[id].vue -> mounted')
-  resume()
 })
 </script>
 

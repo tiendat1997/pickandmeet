@@ -3,9 +3,11 @@ import { useHead } from '@vueuse/head'
 
 import { useLayoutSwitcher } from '/@src/stores/layoutSwitcher'
 import { usePanels } from '/@src/stores/panels'
+import { useGeolocation } from '@vueuse/core'
 
 const panels = usePanels()
 const layoutSwitcher = useLayoutSwitcher()
+const { coords } = useGeolocation()
 
 useHead({
   title: 'Maps 1 - Sidebar - Vuero',
@@ -18,7 +20,7 @@ useHead({
     v-bind="layoutSwitcher.dynamicLayoutProps"
     nowrap
   >
-    <MapsDashboard>
+    <MapsDashboard :coords="coords">
       <template #header>
         <div class="content-section-header">
           <h2 class="title is-4 is-narrow">Maps 1</h2>
