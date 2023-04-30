@@ -181,8 +181,8 @@ const activeTab = ref<TabId>('team')
                   <span>5 / 24</span>
 
                   <div class="avatar-stack">
-                    <VAvatar size="small" picture="/demo/avatars/5.jpg" />
-                    <VAvatar size="small" picture="/demo/avatars/7.jpg" />
+                    <VAvatar size="small" picture="/images/avatars/svg/vuero-5.svg" />
+                    <VAvatar size="small" picture="/images/avatars/svg/vuero-7.svg" />
                     <VAvatar size="small" picture="/images/avatars/svg/vuero-1.svg" />
                   </div>
                 </div>
@@ -250,8 +250,8 @@ const activeTab = ref<TabId>('team')
                   <span>25 / 39</span>
 
                   <div class="avatar-stack">
-                    <VAvatar size="small" picture="/demo/avatars/7.jpg" />
-                    <VAvatar size="small" picture="/demo/avatars/25.jpg" />
+                    <VAvatar size="small" picture="demo/avatars/.jpg" />
+                    <VAvatar size="small" picture="demo/avatars/25.jpg" />
                   </div>
                 </div>
               </div>
@@ -284,7 +284,7 @@ const activeTab = ref<TabId>('team')
                 <div class="timeline-icon">
                   <img
                     class="avatar"
-                    src="/demo/avatars/7.jpg"
+                    src="/images/avatars/svg/vuero-7.svg"
                     alt=""
                     @error.once="onceImageErrored(150)"
                   />
