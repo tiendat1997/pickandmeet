@@ -9,7 +9,7 @@ import { useGeolocation } from '@vueuse/core'
 const viewWrapper = useViewWrapper()
 viewWrapper.setPageTitle('Maps 1')
 
-const { coords, resume } = useGeolocation()
+const { coords, resume, pause } = useGeolocation()
 const route = useRoute()
 const currentPosition = ref<{ longitude: number; latitude: number } | null>(null)
 
@@ -30,12 +30,14 @@ onMounted(() => {
 
 watch(coords, (newPosition) => {
   console.log('current position change -> ', { newPosition })
-  if (newPosition.latitude && newPosition.longitude) {
+  if (newPosition.latitude !== Infinity && newPosition.longitude !== Infinity) {
     currentPosition.value = newPosition
     roomStore.joinRoom(route.params.id, {
       latitude: newPosition.latitude,
       longitude: newPosition.longitude,
     })
+
+    pause()
   }
 })
 </script>
