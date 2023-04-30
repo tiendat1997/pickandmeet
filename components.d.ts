@@ -25,6 +25,7 @@ declare module '@vue/runtime-core' {
     LanguagesPanel: typeof import('./src/components/partials/panels/LanguagesPanel.vue')['default']
     LoginButton: typeof import('./src/components/partials/auth/LoginButton.vue')['default']
     LogoutButton: typeof import('./src/components/partials/auth/LogoutButton.vue')['default']
+    MapMarker: typeof import('./src/components/pages/map/MapMarker.vue')['default']
     MapsDashboard: typeof import('./src/components/pages/map/MapsDashboard.vue')['default']
     'MapsDashboard.old': typeof import('./src/components/pages/map/MapsDashboard.old.vue')['default']
     MarketingAbout: typeof import('./src/components/partials/marketing/MarketingAbout.vue')['default']

@@ -293,6 +293,12 @@ watchPostEffect(() => {
   // const logo = selectedFeature.value.properties.logo
   // const openingCount = selectedFeature.value.properties.openingCount
   // const description = selectedFeature.value.properties.description
+  if (selectedFeatureLatLng.value) {
+    while (Math.abs(selectedFeatureLatLng.value.lng - coordinates[0]) > 180) {
+      coordinates[0] += selectedFeatureLatLng.value.lng > coordinates[0] ? 360 : -360
+    }
+  }
+
   if (popup.value) {
     popup.value.remove()
   }
