@@ -42,14 +42,12 @@ watch(coords, (newPosition) => {
 
 <template>
   <MapsDashboard
-    v-if="currentPosition?.latitude && currentPosition?.longitude"
+    v-if="!!roomDetail.questionId"
     :room-detail="roomDetail"
     :current-position="currentPosition"
   />
   <IoT
-    v-if="
-      currentPosition?.latitude && currentPosition?.longitude && !!roomDetail.questionId
-    "
+    v-if="!!roomDetail.questionId"
     :room-detail="roomDetail"
     :current-position="currentPosition"
   />
