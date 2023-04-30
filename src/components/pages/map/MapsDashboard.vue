@@ -1,116 +1,246 @@
 <script setup lang="ts">
-// import { useThemeColors } from '/@src/composable/useThemeColors'
+import { type Map, Popup } from 'mapbox-gl'
+import { useThemeColors } from '/@src/composable/useThemeColors'
 import { useDarkmode } from '/@src/stores/darkmode'
 import 'mapbox-gl/src/css/mapbox-gl.css'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
-import mapboxgl from 'mapbox-gl'
-import { createApp as createClientComponent } from 'vue'
-import CustomMarker from './CustomMarker.vue'
-import VotePopup from './VotePopup.vue'
 
-import { usePanels } from '/@src/stores/panels'
-import { useRoomStore } from '/@src/stores/useRoom'
-import { useAuth0 } from '@auth0/auth0-vue'
-
-const panels = usePanels()
-// const themeColors = useThemeColors()
-const roomStore = useRoomStore()
-const { user } = useAuth0()
+const themeColors = useThemeColors()
 
 const props = defineProps<{
   reversed?: boolean
-  roomDetail: any
-  currentPosition: any
 }>()
 
 const darkmode = useDarkmode()
 const selectedFeature = ref()
+const selectedFeatureLatLng = ref()
+const selectedFeatureName = ref('')
 const mapElement = shallowRef<HTMLElement>()
 const geocoderElement = shallowRef<HTMLElement>()
 const popupElement = shallowRef<HTMLElement>()
 const map = shallowRef<Map>()
+const popup = shallowRef<Popup>()
 const geocoder = shallowRef<any>()
-const bounds: any = ref<any>()
-const globalMarkers: any = ref<any>({})
-const globalMemberMarkers: any = ref<any>({})
-const votePopupRef: any = shallowRef<Popup>()
 
-const getFeatures: any = computed(() => {
-  return roomStore.getFeatures
-})
+const locations = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Fast Pizza',
+        logo: '/images/icons/logos/fastpizza.svg',
+        distance: 0.3,
+        openingCount: '6pm',
+        phone: '+1 555 456-5659',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.038659, 38.931567],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Envato',
+        logo: '/images/icons/logos/envato.svg',
+        distance: 0.8,
+        openingCount: '5pm',
+        phone: '+1 555 154-4568',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.003168, 38.894651],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Lipflow',
+        logo: '/images/icons/logos/lipflow.svg',
+        distance: 1.2,
+        openingCount: '8pm',
+        phone: '+1 555 456-7897',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.090372, 38.881189],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Metamovies',
+        logo: '/images/icons/logos/metamovies.svg',
+        distance: 0.5,
+        openingCount: '11pm',
+        phone: '+1 555 456-5659',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.111561, 38.882342],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Slicer',
+        logo: '/images/icons/logos/slicer.svg',
+        distance: 0.2,
+        openingCount: '4:30pm',
+        phone: '+1 555 456-7568',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.052477, 38.943951],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Drop',
+        logo: '/images/icons/logos/drop.svg',
+        distance: 2.1,
+        openingCount: '7pm',
+        phone: '+1 555 456-5659',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.043444, 38.909664],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Fresco',
+        logo: '/images/icons/logos/fresco.svg',
+        distance: 0.6,
+        openingCount: '6pm',
+        phone: '+1 555 456-5659',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.031706, 38.914581],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Hairz',
+        logo: '/images/icons/logos/hairz.svg',
+        distance: 0.3,
+        openingCount: '6pm',
+        phone: '+1 555 755-3382',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.020945, 38.878241],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Vego LLC',
+        logo: '/images/icons/logos/vego.svg',
+        distance: 0.3,
+        openingCount: '9pm',
+        phone: '+1 555 456-8984',
+        website: 'https://huro.cssninja.io',
+        description:
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [-77.007481, 38.876516],
+      },
+    },
+  ],
+} as const
 
-const getCurrentUserId: any = computed(() => {
-  return user.value.sub
-})
-
-const getQuestionId: any = computed(() => {
-  return roomStore.getQuestionId
-})
-
-function loadFeatures() {
+function loadLayers() {
   if (!map.value) {
     return
   }
-  const featureList = getFeatures.value
-  // add markers to map
-  for (const feature of featureList) {
-    // create a HTML element for each feature
-    const markerEl = document.createElement('div')
-    markerEl.className = 'marker'
 
-    const markerContent = document.createElement('div')
-    markerEl.appendChild(markerContent)
-
-    // Create popup
-    const divElement = document.createElement('div')
-    votePopupRef.value = new mapboxgl.Popup({ offset: 5 }).setDOMContent(divElement)
-    const coordinates = {
-      lng: feature.coordinates[0],
-      lat: feature.coordinates[1],
-    }
-
-    const markerKey = String(coordinates.lng) + '_' + String(coordinates.lat)
-    const oldMarker = globalMarkers[markerKey]
-    // make a marker for each feature and add it to the map
-    const marker = new mapboxgl.Marker(markerEl)
-      .setLngLat(feature.coordinates)
-      .setPopup(votePopupRef.value)
-      .addTo(map.value)
-
-    // Remove old marker from the map
-    if (oldMarker) {
-      oldMarker.remove()
-    }
-
-    globalMarkers[markerKey] = marker
-
-    // POPUP Component
-    createClientComponent(CustomMarker, { count: feature.count ?? 0 }).mount(
-      markerContent
-    )
-
-    const userId = getCurrentUserId.value
-    // POPUP Component
-    createClientComponent(VotePopup, {
-      userId: userId,
-      questionId: getQuestionId.value,
-      placeName: feature.properties.placeName,
-      category: feature.properties.category,
-      displayAddress: feature.properties.displayAddress,
-      coordinates: coordinates,
-      submitVote: roomStore.submitVote,
-      submitRemoveVote: roomStore.submitRemoveVote,
-      closePopup: votePopupRef.value.remove,
-      isVote: !(feature?.userIds ?? []).includes(userId),
-    }).mount(divElement)
+  // Do nothing if source already added
+  if (map.value.getSource('places')) {
+    return
   }
+
+  map.value.addSource('places', {
+    type: 'geojson',
+    data: locations as any,
+  })
+
+  // Add a layer showing the places.
+  map.value.addLayer({
+    id: 'places',
+    type: 'circle',
+    source: 'places',
+    paint: {
+      'circle-color': darkmode.isDark ? themeColors.accent : themeColors.primary,
+      'circle-radius': 6,
+      'circle-stroke-width': 2,
+      'circle-stroke-color': darkmode.isDark
+        ? themeColors.accentLight
+        : themeColors.primaryMedium,
+    },
+  })
+
+  map.value.on('click', 'places', (e: any) => {
+    selectedFeature.value = e.features[0]
+    selectedFeatureLatLng.value = e.lngLat
+  })
+
+  // Change the cursor to a pointer when the mouse is over the places layer.
+  map.value.on('mouseenter', 'places', () => {
+    if (!map.value) {
+      return
+    }
+
+    map.value.getCanvas().style.cursor = 'pointer'
+  })
+
+  // Change it back to a pointer when it leaves.
+  map.value.on('mouseleave', 'places', () => {
+    if (!map.value) {
+      return
+    }
+
+    map.value.getCanvas().style.cursor = ''
+  })
+}
+
+function selectFeature(feature: any) {
+  selectedFeature.value = undefined
+  selectedFeature.value = feature
 }
 
 onMounted(() => {
-  console.log('onMounted: MapDashboard -> ', {
-    position: props.currentPosition,
-    roomDetail: props.roomDetail,
-  })
   Promise.all([
     import('mapbox-gl').then((m) => m.default),
     import('@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js').then(
@@ -126,9 +256,9 @@ onMounted(() => {
     map.value = new mapboxgl.Map({
       container: mapElement.value,
       style: darkmode.isDark
-        ? 'mapbox://styles/mapbox/dark-v11'
-        : 'mapbox://styles/mapbox/light-v11',
-      center: [props.currentPosition.longitude, props.currentPosition.latitude],
+        ? 'mapbox://styles/mapbox/dark-v10'
+        : 'mapbox://styles/mapbox/light-v10',
+      center: [-77.04, 38.907],
       zoom: 12,
     })
 
@@ -144,12 +274,61 @@ onMounted(() => {
           setTimeout(loadingStyles, 1500)
           return
         }
+
+        loadLayers()
       }
       loadingStyles()
     })
 
     geocoderElement.value.appendChild(geocoder.value.onAdd(map.value))
   })
+})
+
+watchPostEffect(() => {
+  if (!selectedFeature.value || !popupElement.value || !map.value) {
+    return
+  }
+
+  const feature = selectedFeature.value
+  const { geometry, properties } = feature
+  const { name } = properties
+  const coordinates = geometry.coordinates.slice()
+  // const logo = selectedFeature.value.properties.logo
+  // const openingCount = selectedFeature.value.properties.openingCount
+  // const description = selectedFeature.value.properties.description
+
+  console.log('zooming at: ', properties, coordinates)
+
+  // Ensure that if the map is zoomed out such that multiple
+  // copies of the feature are visible, the popup appears
+  // over the copy being pointed to.
+  if (selectedFeatureLatLng.value) {
+    while (Math.abs(selectedFeatureLatLng.value.lng - coordinates[0]) > 180) {
+      coordinates[0] += selectedFeatureLatLng.value.lng > coordinates[0] ? 360 : -360
+    }
+  }
+
+  map.value.flyTo({
+    center: coordinates,
+    zoom: 15,
+    bearing: 0,
+    essential: true, // this animation is considered essential with respect to prefers-reduced-motion
+  })
+
+  if (popup.value) {
+    popup.value.remove()
+  }
+
+  popup.value = new Popup()
+    .on('open', () => {
+      selectedFeatureName.value = name
+    })
+    .on('close', () => {
+      selectedFeatureName.value = ''
+    })
+    .setLngLat(coordinates)
+    .setHTML(popupElement.value.innerHTML)
+    .addTo(map.value)
 })
 
 watch(
@@ -166,58 +345,6 @@ watch(
     }
   }
 )
-
-watch(
-  () => props.roomDetail.members,
-  async (members) => {
-    if (!map.value) {
-      return
-    }
-
-    for (const memberLocation of members) {
-      console.log('generateMarkers -> ', memberLocation)
-      const coordinates = memberLocation.geoJson.coordinates
-      const memberId = memberLocation.uid
-      const isCurrent = getCurrentUserId.value === memberId // user.sub === memberLocation.uid;
-      const oldMarker = globalMemberMarkers[memberId]
-
-      const marker = new mapboxgl.Marker({
-        color: isCurrent ? 'red' : 'black',
-      })
-        .setLngLat(coordinates)
-        .addTo(map.value)
-
-      // Remove old marker from the map
-      if (oldMarker) {
-        oldMarker.remove()
-      }
-
-      globalMemberMarkers[memberId] = marker
-      if (!bounds.value) {
-        bounds.value = new mapboxgl.LngLatBounds(coordinates, coordinates)
-      } else {
-        bounds.value.extend(coordinates)
-      }
-    }
-
-    const centerBound = bounds.value.getCenter()
-    console.log('center bound location -> ', centerBound)
-    await roomStore.fetchNearByLocations({
-      longitude: centerBound.lng,
-      latitude: centerBound.lat,
-    })
-
-    loadFeatures()
-  }
-)
-
-watch(
-  () => props.roomDetail.votes,
-  async (votes: any[]) => {
-    console.log('MapsDashboard::watchVotes -> ', votes)
-    loadFeatures()
-  }
-)
 </script>
 
 <template>
@@ -226,6 +353,7 @@ watch(
       <div ref="mapElement" class="map-section"></div>
       <div ref="geocoderElement" class="geocoder"></div>
       <div ref="popupElement" style="display: none; visibility: hidden">
+        Test
         <MapMarker
           v-if="selectedFeature"
           :logo="selectedFeature.properties.logo"
@@ -234,29 +362,65 @@ watch(
           :description="selectedFeature.properties.description"
         />
       </div>
-      <div class="map-toolbar">
-        <VIconButton
-          circle
-          aria-label="View activity"
-          tabindex="0"
-          icon="feather:grid"
-          @keydown.space.prevent="panels.setActive('activity')"
-          @click="panels.setActive('activity')"
-        />
+      <div class="content-section">
+        <slot name="header"></slot>
+        <div class="content-section-body" data-simplebar>
+          <!--Title-->
+          <h4 class="content-section-title">Recent Locations</h4>
+
+          <!--Map Box-->
+          <div
+            v-for="(feature, key) in locations.features"
+            :key="key"
+            class="box map-box"
+            :class="[selectedFeatureName === feature.properties.name && 'is-active']"
+            tabindex="0"
+            @keydown.space.prevent="selectFeature(feature)"
+            @click="selectFeature(feature)"
+          >
+            <div class="map-box-place">
+              <div class="map-box-header">
+                <VBlock
+                  :title="feature.properties.name"
+                  :subtitle="`Open until ${feature.properties.openingCount}`"
+                  center
+                >
+                  <template #icon>
+                    <VAvatar size="small" :picture="feature.properties.logo" />
+                  </template>
+                </VBlock>
+              </div>
+              <div class="map-box-body">
+                <p>
+                  {{ feature.properties.description }}
+                </p>
+              </div>
+              <div class="map-box-actions">
+                <div class="rating">
+                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
+                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
+                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
+                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
+                  <i aria-hidden="true" class="fas fa-star highlighted"></i>
+                </div>
+                <div class="actions">
+                  <div class="action">
+                    <i aria-hidden="true" class="iconify" data-icon="feather:flag"></i>
+                    <span class="dark-inverted">
+                      {{ feature.properties.distance }} mile
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <style lang="scss">
-.marker {
-  background-size: cover;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
 .has-top-nav {
   .dashboard-map-wrapper {
     top: 80px;
@@ -284,7 +448,99 @@ watch(
 
     .map-section {
       position: relative;
-      width: 100%;
+      width: calc(100% - 380px);
+    }
+
+    .content-section {
+      width: 380px;
+      background: var(--white);
+
+      .content-section-header {
+        height: 80px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 2rem;
+
+        ~ .content-section-body {
+          height: calc(100% - 80px);
+          padding: 0 2rem 2rem;
+        }
+      }
+
+      .content-section-body {
+        height: 100%;
+        overflow-y: auto;
+        padding: 2rem;
+
+        .content-section-title {
+          font-family: var(--font);
+          font-size: 0.8rem;
+          color: var(--light-text);
+          text-transform: uppercase;
+          margin-bottom: 0.75rem;
+        }
+
+        .map-box {
+          border: 1px solid var(--border);
+          border-radius: 0.75rem;
+          box-shadow: none;
+          cursor: pointer;
+          transition: border 0.3s, box-shadow 0.3s;
+
+          &:focus-visible {
+            outline-offset: var(--accessibility-focus-outline-offset);
+            outline-width: var(--accessibility-focus-outline-width);
+            outline-style: var(--accessibility-focus-outline-style);
+            outline-color: var(--accessibility-focus-outline-color);
+          }
+
+          &.is-active {
+            border-color: var(--primary);
+            box-shadow: var(--light-box-shadow);
+          }
+
+          .map-box-body {
+            padding: 0.5rem 0;
+
+            p {
+              font-size: 0.95rem;
+            }
+          }
+
+          .map-box-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            .rating {
+              i {
+                font-size: 0.9rem;
+                color: var(--widget-grey);
+
+                &.highlighted {
+                  color: var(--yellow);
+                }
+              }
+            }
+
+            .action {
+              display: flex;
+              align-items: center;
+              font-family: var(--font);
+              font-size: 0.9rem;
+              color: var(--dark-text);
+
+              svg {
+                height: 16px;
+                width: 16px;
+                margin-right: 0.25rem;
+                color: var(--light-text);
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -349,19 +605,6 @@ watch(
   left: 0;
   right: 0;
   margin: 0 auto;
-}
-
-.map-toolbar {
-  position: absolute;
-  z-index: 1;
-  top: 1rem;
-  right: 0;
-  margin-right: 1.5rem;
-
-  > button {
-    width: 44px;
-    height: 44px;
-  }
 }
 
 .mapboxgl-ctrl-geocoder {
@@ -532,8 +775,12 @@ watch(
       }
 
       .map-section {
-        min-height: 100vh;
+        min-height: 30vh;
         width: 100%;
+      }
+
+      .content-section {
+        height: 70vh;
       }
     }
   }
@@ -562,7 +809,12 @@ watch(
       }
 
       .map-section {
-        min-height: 100vh;
+        min-height: 30vh;
+        width: 100%;
+      }
+
+      .content-section {
+        height: calc(70vh - 60px);
         width: 100%;
       }
     }

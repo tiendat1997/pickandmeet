@@ -1,56 +1,43 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
-import { useViewWrapper } from '/@src/stores/viewWrapper'
-import { useRoute } from 'vue-router'
-import { useRoomStore } from '/@src/stores/useRoom'
-import { useGeolocation } from '@vueuse/core'
 
-const viewWrapper = useViewWrapper()
-viewWrapper.setPageTitle('Maps 1')
+import { useLayoutSwitcher } from '/@src/stores/layoutSwitcher'
+import { usePanels } from '/@src/stores/panels'
 
-const { coords, resume, pause } = useGeolocation()
-const route = useRoute()
-const currentPosition = ref<{ longitude: number; latitude: number } | null>(null)
-
-const roomDetail = computed(() => {
-  return roomStore.getRoomDetail
-})
-
-const roomStore = useRoomStore()
+const panels = usePanels()
+const layoutSwitcher = useLayoutSwitcher()
 
 useHead({
   title: 'Maps 1 - Sidebar - Vuero',
 })
-
-onMounted(() => {
-  console.log('route -> ', route.params.id)
-  resume()
-})
-
-watch(coords, (newPosition) => {
-  console.log('current position change -> ', { newPosition })
-  if (newPosition.latitude !== Infinity && newPosition.longitude !== Infinity) {
-    currentPosition.value = newPosition
-    roomStore.joinRoom(route.params.id, {
-      latitude: newPosition.latitude,
-      longitude: newPosition.longitude,
-    })
-
-    pause()
-  }
-})
 </script>
 
 <template>
-  <MapsDashboard
-    v-if="!!roomDetail.questionId"
-    :room-detail="roomDetail"
-    :current-position="currentPosition"
-  />
-  <IoT
-    v-if="!!roomDetail.questionId"
-    :room-detail="roomDetail"
-    :current-position="currentPosition"
-  />
+  <component
+    :is="layoutSwitcher.dynamicLayoutComponent"
+    v-bind="layoutSwitcher.dynamicLayoutProps"
+    nowrap
+  >
+    <MapsDashboard>
+      <template #header>
+        <div class="content-section-header">
+          <h2 class="title is-4 is-narrow">Maps 1</h2>
+
+          <Toolbar class="desktop-toolbar">
+            <ToolbarNotification />
+
+            <a
+              class="toolbar-link right-panel-trigger"
+              aria-label="View activity"
+              tabindex="0"
+              @keydown.space.prevent="panels.setActive('activity')"
+              @click="panels.setActive('activity')"
+            >
+              <i aria-hidden="true" class="iconify" data-icon="feather:grid"></i>
+            </a>
+          </Toolbar>
+        </div>
+      </template>
+    </MapsDashboard>
+  </component>
 </template>
