@@ -5,7 +5,7 @@ import { useApi } from '../composable/useApi'
 import axios from 'axios'
 export const useRoomStore = defineStore('room', {
   state: (): any => ({
-    members: [],
+    members: {},
     votes: {},
     question: null,
     rangeKey: null,
@@ -17,7 +17,7 @@ export const useRoomStore = defineStore('room', {
       return state.questionId
     },
     getMembers(state) {
-      return state.members
+      return Object.values(state.members ?? {}) ?? []
     },
     getRoomDetail(state) {
       return {
@@ -106,9 +106,21 @@ export const useRoomStore = defineStore('room', {
         const { data } = await api.post(url)
         console.log('Result: ', data)
         this.question = data.question
-        this.members = data.members
         this.rangeKey = data.rangeKey
         this.questionId = data._id
+
+        // init members
+        console.log('init members -> ', data.members)
+        if ((data.members ?? []).length) {
+          data.members.forEach((member: any) => {
+            this.members = {
+              ...this.members,
+              [member.uid]: {
+                ...member,
+              },
+            }
+          })
+        }
 
         // init votes
         if ((data.votes ?? []).length) {
@@ -249,6 +261,16 @@ export const useRoomStore = defineStore('room', {
           userIds: userIds,
           userList: userList,
         },
+      }
+    },
+    addMember(member: any) {
+      console.log('store::addRealTimeMember')
+      const coordinates = member.geoJson.coordinates
+      const key =
+        String(member.uid) + '_' + String(coordinates[0]) + '_' + String(coordinates[1])
+      this.members = {
+        ...this.members,
+        [key]: member,
       }
     },
   },

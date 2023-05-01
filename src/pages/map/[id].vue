@@ -31,6 +31,12 @@ useHead({
 
 watch(coords, (newPosition) => {
   console.log('current position change -> ', { newPosition })
+  alert(
+    `current position change -> ${JSON.stringify({
+      lng: newPosition.longitude,
+      lat: newPosition.latitude,
+    })}`
+  )
   if (newPosition.latitude !== Infinity && newPosition.longitude !== Infinity) {
     roomStore.joinRoom(route.params.id, {
       latitude: newPosition.latitude,

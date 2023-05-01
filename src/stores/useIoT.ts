@@ -77,7 +77,7 @@ export const useIoT = defineStore('iot', () => {
         if (msg.title === 'new-comer') {
           console.log('FOUND NEW COMER', msg)
           if (msg.member) {
-            // _store.commit('addRealTimeMember', msg.member)
+            roomStore.addMember(msg.member)
           }
         } else if (msg.title === 'new-vote') {
           console.log('FOUND NEW VOTE', msg)

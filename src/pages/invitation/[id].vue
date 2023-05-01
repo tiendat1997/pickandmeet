@@ -23,6 +23,12 @@ const getInvitationInfo = computed(() => {
 
 watch(coords, (newPosition) => {
   console.log('current position change -> ', { newPosition })
+  alert(
+    `current position change -> ${JSON.stringify({
+      lng: newPosition.longitude,
+      lat: newPosition.latitude,
+    })}`
+  )
   const invitationCode = route.params.id
   if (newPosition.latitude && newPosition.longitude && invitationCode) {
     currentPosition.value = newPosition
