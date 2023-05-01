@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Map, Popup } from 'mapbox-gl'
+import { type Map, Popup, Marker } from 'mapbox-gl'
 import { useThemeColors } from '/@src/composable/useThemeColors'
 import { useDarkmode } from '/@src/stores/darkmode'
 import 'mapbox-gl/src/css/mapbox-gl.css'
@@ -10,7 +10,7 @@ const themeColors = useThemeColors()
 const props = defineProps<{
   roomDetail: any
   coords: any
-  members: any
+  members: any[]
   locations: any[]
   reversed?: boolean
 }>()
@@ -25,8 +25,36 @@ const popupElement = shallowRef<HTMLElement>()
 const map = shallowRef<Map>()
 const popup = shallowRef<Popup>()
 const geocoder = shallowRef<any>()
+const globalMemberMarkers: any = ref<any>({})
 
-function loadLayers() {
+function loadMemberLayers() {
+  if (!map.value) {
+    return
+  }
+
+  for (const memberLocation of props.members) {
+    console.log('generateMarkers -> ', memberLocation)
+    const coordinates = memberLocation.geoJson.coordinates
+    const memberId = memberLocation.uid
+    const isCurrent = false // getCurrentUserId.value === memberId // user.sub === memberLocation.uid;
+    const oldMarker = globalMemberMarkers[memberId]
+
+    const marker = new Marker({
+      color: isCurrent ? 'red' : 'black',
+    })
+      .setLngLat(coordinates)
+      .addTo(map.value)
+
+    // Remove old marker from the map
+    if (oldMarker) {
+      oldMarker.remove()
+    }
+
+    globalMemberMarkers[memberId] = marker
+  }
+}
+
+function loadLocationLayers() {
   if (!map.value) {
     return
   }
@@ -115,7 +143,8 @@ onMounted(() => {
           return
         }
 
-        loadLayers()
+        loadLocationLayers()
+        loadMemberLayers()
       }
       loadingStyles()
     })
@@ -170,6 +199,13 @@ watch(
     } else {
       map.value.setStyle('mapbox://styles/mapbox/light-v10')
     }
+  }
+)
+
+watch(
+  () => props.members,
+  () => {
+    loadMemberLayers()
   }
 )
 </script>

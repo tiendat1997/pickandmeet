@@ -71,6 +71,7 @@ onMounted(() => {
     :coords="coords"
     :locations="locations"
     :room-detail="roomDetail"
+    :members="members"
   >
     <template #header>
       <div class="content-section-header">
