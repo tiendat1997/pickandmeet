@@ -6,9 +6,11 @@ meta:
 <script setup lang="ts">
 import { useAuth0 } from '@auth0/auth0-vue'
 import { useLayoutSwitcher } from '/@src/stores/layoutSwitcher'
+import { useGeolocation } from '@vueuse/core'
 
 const { isLoading } = useAuth0()
 const layoutSwitcher = useLayoutSwitcher()
+const { coords } = useGeolocation()
 </script>
 
 <template>
@@ -18,8 +20,9 @@ const layoutSwitcher = useLayoutSwitcher()
       <Transition name="fade-fast" mode="out-in">
         <component
           :is="Component"
-          :v-if="!isLoading"
+          :v-if="!isLoading && coords.longitude && coords.latitude"
           v-bind="layoutSwitcher.dynamicLayoutProps"
+          :coords="coords"
           nowrap
         />
       </Transition>

@@ -2,14 +2,16 @@
 import { useHead } from '@vueuse/head'
 import { useRoute } from 'vue-router'
 import { usePanels } from '/@src/stores/panels'
-import { useGeolocation } from '@vueuse/core'
+
 import { useRoomStore } from '/@src/stores/useRoom'
-// import { useAuth0 } from '@auth0/auth0-vue'
 import mapboxgl from 'mapbox-gl'
+
+const props = defineProps<{
+  coords: any
+}>()
 
 const panels = usePanels()
 const route: any = useRoute()
-const { coords } = useGeolocation()
 // const { user } = useAuth0()
 
 const roomStore = useRoomStore()
@@ -29,18 +31,19 @@ useHead({
   title: 'Maps 1 - Sidebar - Vuero',
 })
 
-watch(coords, (newPosition) => {
-  console.log('current position change -> ', { newPosition })
-  alert(
-    `current position change -> ${JSON.stringify({
-      lng: newPosition.longitude,
-      lat: newPosition.latitude,
-    })}`
-  )
-  if (newPosition.latitude !== Infinity && newPosition.longitude !== Infinity) {
+watchPostEffect(() => {
+  console.log('watchPostEffect -> ', props.coords)
+  if (props.coords.longitude !== Infinity && props.coords.latitude !== Infinity) {
+    console.log('current position change -> ', { coords: props.coords })
+    alert(
+      `current position change -> ${JSON.stringify({
+        longitude: props.coords.longitude,
+        latitude: props.coords.latitude,
+      })}`
+    )
     roomStore.joinRoom(route.params.id, {
-      latitude: newPosition.latitude,
-      longitude: newPosition.longitude,
+      latitude: props.coords.latitude,
+      longitude: props.coords.longitude,
     })
   }
 })

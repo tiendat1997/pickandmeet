@@ -3,35 +3,39 @@ import { useHead } from '@vueuse/head'
 import { useRoute } from 'vue-router'
 import { useViewWrapper } from '/@src/stores/viewWrapper'
 import { useInvitationStore } from '/@src/stores/invitations'
-import { useGeolocation } from '@vueuse/core'
+
+const props = defineProps<{
+  coords: any
+}>()
 
 const viewWrapper = useViewWrapper()
 viewWrapper.setPageTitle('Invitation')
 const invitationStore = useInvitationStore()
-const route = useRoute()
-const { coords } = useGeolocation()
-
-const currentPosition = ref<{ longitude: number; latitude: number } | null>(null)
+const route: any = useRoute()
 
 useHead({
   title: 'Invitation - My app',
 })
 
-const getInvitationInfo = computed(() => {
+const invitationInfo = computed(() => {
   return invitationStore.getInvitationInfo
 })
 
-watch(coords, (newPosition) => {
-  console.log('current position change -> ', { newPosition })
-  alert(
-    `current position change -> ${JSON.stringify({
-      lng: newPosition.longitude,
-      lat: newPosition.latitude,
-    })}`
-  )
+watchPostEffect(() => {
+  console.log('watchPostEffect -> ', props.coords)
   const invitationCode = route.params.id
-  if (newPosition.latitude && newPosition.longitude && invitationCode) {
-    currentPosition.value = newPosition
+  if (
+    invitationCode &&
+    props.coords.longitude !== Infinity &&
+    props.coords.latitude !== Infinity
+  ) {
+    console.log('current position change -> ', { coords: props.coords })
+    alert(
+      `current position change -> ${JSON.stringify({
+        longitude: props.coords.longitude,
+        latitude: props.coords.latitude,
+      })}`
+    )
     invitationStore.fetchInvitationInfo(invitationCode)
   }
 })
@@ -44,10 +48,8 @@ onMounted(() => {
 <template>
   <div class="page-content-inner">
     <Invitation
-      v-if="
-        currentPosition?.latitude && currentPosition?.longitude && getInvitationInfo?._id
-      "
-      :invitation-info="getInvitationInfo"
+      v-if="!!invitationInfo && !!invitationInfo._id"
+      :invitation-info="invitationInfo"
     />
   </div>
 </template>

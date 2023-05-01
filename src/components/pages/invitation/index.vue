@@ -12,7 +12,7 @@ const props = withDefaults(
 )
 
 const isLoading = ref(false)
-const hostInfoRef = ref({})
+const hostInfoRef: any = ref({})
 const membersInfoRef = ref([])
 
 const notyf = useNotyf()
