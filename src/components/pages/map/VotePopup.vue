@@ -2,76 +2,26 @@
 const props = withDefaults(
   defineProps<{
     questionId: String
-    placeName: String
-    category: String
-    displayAddress: String
-    coordinates: Object
-    submitVote: Function
-    submitRemoveVote: Function
-    closePopup: Function
+    feature: any
     isVote: Boolean
   }>(),
   {}
 )
 
-const isLoading = ref(false)
-
-async function onRemoveVoteClick() {
-  let payload = {
-    questionId: props.questionId,
-    coordinates: props.coordinates,
-  }
-  isLoading.value = true
-  const result = await props.submitRemoveVote(payload)
-  console.log('submitRemoveVote result ->', result)
-  isLoading.value = false
-
-  if (props.closePopup) {
-    props.closePopup()
-  }
-}
-
-async function onVoteClick() {
-  let payload = {
-    questionId: props.questionId,
-    coordinates: props.coordinates,
-    locationMetadata: {
-      placeName: props.placeName,
-      category: props.category,
-      displayAddress: props.displayAddress,
-    },
-  }
-  isLoading.value = true
-  const result = await props.submitVote(payload)
-  console.log('submitVote result ->', result)
-  isLoading.value = false
-
-  if (props.closePopup) {
-    props.closePopup()
-  }
-}
+watchPostEffect(() => {
+  console.log('VotePopup::onMounted -> ', props)
+})
 </script>
 
 <template>
   <div>
-    <h3>{{ placeName }}</h3>
-    <h4>{{ category }}</h4>
-    <p>{{ displayAddress }}</p>
+    <h3>{{ feature.properties.placeName }}</h3>
+    <h4>{{ feature.properties.category }}</h4>
     <hr />
-    <VButton
-      v-if="isVote"
-      raised
-      color="primary"
-      :loading="isLoading"
-      @click="onVoteClick()"
+    <VButton v-if="isVote === true" id="vote-popup-btn-submit" raised color="primary"
       >Vote</VButton
     >
-    <VButton
-      v-if="!isVote"
-      raised
-      color="danger"
-      :loading="isLoading"
-      @click="onRemoveVoteClick()"
+    <VButton v-if="isVote === false" id="vote-popup-btn-submit" raised color="danger"
       >Remove Vote</VButton
     >
   </div>

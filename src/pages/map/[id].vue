@@ -31,16 +31,24 @@ useHead({
   title: 'Maps 1 - Sidebar - Vuero',
 })
 
+onMounted(() => {
+  console.log('mounted -> ', props.coords)
+})
+
+watch(props.coords, async (newCoords: any) => {
+  console.log('watchCoords -> ', newCoords)
+})
+
 watchPostEffect(() => {
   console.log('watchPostEffect -> ', props.coords)
-  if (props.coords.longitude !== Infinity && props.coords.latitude !== Infinity) {
+  if (route.params.id && props.coords.longitude && props.coords.latitude) {
     console.log('current position change -> ', { coords: props.coords })
-    alert(
-      `current position change -> ${JSON.stringify({
-        longitude: props.coords.longitude,
-        latitude: props.coords.latitude,
-      })}`
-    )
+    // alert(
+    //   `current position change -> ${JSON.stringify({
+    //     longitude: props.coords.longitude,
+    //     latitude: props.coords.latitude,
+    //   })}`
+    // )
     roomStore.joinRoom(route.params.id, {
       latitude: props.coords.latitude,
       longitude: props.coords.longitude,

@@ -5,10 +5,21 @@ meta:
 
 <script setup lang="ts">
 import { useAuth0 } from '@auth0/auth0-vue'
-import { useGeolocation } from '@vueuse/core'
+import { useCurrentPosition } from '/@src/stores/geolocation'
 
 const { isLoading } = useAuth0()
-const { coords } = useGeolocation()
+const currentPositionStore = useCurrentPosition()
+const coords = computed(() => {
+  return currentPositionStore.coords
+})
+const loadingPosition = computed(() => {
+  return currentPositionStore.loadingPosition
+})
+
+onMounted(() => {
+  console.log('[invitation.vue] -> onMounted')
+  currentPositionStore.fetchCurrentPosition()
+})
 </script>
 
 <template>
@@ -18,7 +29,7 @@ const { coords } = useGeolocation()
       <Transition name="fade-fast" mode="out-in">
         <component
           :is="Component"
-          :v-if="!isLoading && coords.longitude && coords.latitude"
+          :v-if="!isLoading && !loadingPosition"
           :coords="coords"
         />
       </Transition>

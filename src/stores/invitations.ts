@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
-import { useGeolocation } from '@vueuse/core'
 import { useApi } from '../composable/useApi'
-
-const geoLocation = useGeolocation()
+import { useCurrentPosition } from './geolocation'
 
 export const useInvitationStore = defineStore('invitations', {
   state: (): any => ({
@@ -48,13 +46,14 @@ export const useInvitationStore = defineStore('invitations', {
       hostId: string
     }) {
       try {
-        const coords = geoLocation.coords.value
+        const geoLocation = useCurrentPosition()
+        console.log('invitations::acceptInvitation -> ', geoLocation.coords)
         const payload = {
           invitationCode: invitationCode,
           hostId: hostId,
           position: {
-            longitude: coords.longitude,
-            latitude: coords.latitude,
+            longitude: geoLocation.coords.longitude,
+            latitude: geoLocation.coords.latitude,
           },
         }
         const api = useApi()

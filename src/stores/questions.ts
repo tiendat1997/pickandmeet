@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
-import { useGeolocation } from '@vueuse/core'
 import { useApi } from '../composable/useApi'
-const geoLocation = useGeolocation()
+import { useCurrentPosition } from './geolocation'
 
 export const useQuestionStore = defineStore('questions', {
   state: () => ({
@@ -26,12 +25,12 @@ export const useQuestionStore = defineStore('questions', {
     },
     async addNewQuestion(values: any) {
       try {
-        const coords = geoLocation.coords.value
+        const geoLocation = useCurrentPosition()
         const payload = {
           question: values.questionName,
           position: {
-            longitude: coords.longitude,
-            latitude: coords.latitude,
+            longitude: geoLocation.coords.longitude,
+            latitude: geoLocation.coords.latitude,
           },
           userInfo: values.userInfo,
         }

@@ -4,12 +4,12 @@ import { useHead } from '@vueuse/head'
 import { useViewWrapper } from '/@src/stores/viewWrapper'
 import { useRoute } from 'vue-router'
 import { useRoomStore } from '/@src/stores/useRoom'
-import { useGeolocation } from '@vueuse/core'
+import { useCurrentPosition } from '/@src/stores/geolocation'
 
 const viewWrapper = useViewWrapper()
 viewWrapper.setPageTitle('Maps 1')
 
-const { coords, resume, pause } = useGeolocation()
+const { coords } = useCurrentPosition()
 const route = useRoute()
 const currentPosition = ref<{ longitude: number; latitude: number } | null>(null)
 

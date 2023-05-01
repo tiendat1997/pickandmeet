@@ -4,6 +4,8 @@ import { useThemeColors } from '/@src/composable/useThemeColors'
 import { useDarkmode } from '/@src/stores/darkmode'
 import 'mapbox-gl/src/css/mapbox-gl.css'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
+import { useRoomStore } from '/@src/stores/useRoom'
+import { useAuth0 } from '@auth0/auth0-vue'
 
 const themeColors = useThemeColors()
 
@@ -15,10 +17,10 @@ const props = defineProps<{
   reversed?: boolean
 }>()
 
+const roomStore = useRoomStore()
 const darkmode = useDarkmode()
 const selectedFeature = ref()
 const selectedFeatureLatLng = ref()
-const selectedFeatureName = ref('')
 const mapElement = shallowRef<HTMLElement>()
 const geocoderElement = shallowRef<HTMLElement>()
 const popupElement = shallowRef<HTMLElement>()
@@ -26,6 +28,8 @@ const map = shallowRef<Map>()
 const popup = shallowRef<Popup>()
 const geocoder = shallowRef<any>()
 const globalMemberMarkers: any = ref<any>({})
+const isVote = ref<null | Boolean>(null)
+const { user } = useAuth0()
 
 function loadMemberLayers() {
   if (!map.value) {
@@ -61,14 +65,14 @@ function loadLocationLayers() {
 
   // Do nothing if source already added
   if (map.value.getSource('places')) {
-    return
+    const source = map.value.getSource('places') as any
+    return source.setData(props.locations as any)
   }
 
   map.value.addSource('places', {
     type: 'geojson',
     data: props.locations as any,
   })
-
   // Add a layer showing the places.
   map.value.addLayer({
     id: 'places',
@@ -85,8 +89,11 @@ function loadLocationLayers() {
   })
 
   map.value.on('click', 'places', (e: any) => {
+    console.log('click -> ', e.features[0])
     selectedFeature.value = e.features[0]
     selectedFeatureLatLng.value = e.lngLat
+    const userIds = JSON.parse(e.features[0]?.properties?.userIds ?? null)
+    isVote.value = !(userIds ?? []).includes(user.value.sub)
   })
 
   // Change the cursor to a pointer when the mouse is over the places layer.
@@ -159,32 +166,68 @@ watchPostEffect(() => {
   }
 
   const feature = selectedFeature.value
-  const { geometry, properties } = feature
-  const { name } = properties
+  const { geometry } = feature
   const coordinates = geometry.coordinates.slice()
-  // const logo = selectedFeature.value.properties.logo
-  // const openingCount = selectedFeature.value.properties.openingCount
-  // const description = selectedFeature.value.properties.description
-  if (selectedFeatureLatLng.value) {
-    while (Math.abs(selectedFeatureLatLng.value.lng - coordinates[0]) > 180) {
-      coordinates[0] += selectedFeatureLatLng.value.lng > coordinates[0] ? 360 : -360
-    }
-  }
+  const userIds = JSON.parse(feature?.properties?.userIds ?? null)
+  const isVote = !(userIds ?? []).includes(user.value.sub)
 
   if (popup.value) {
     popup.value.remove()
   }
 
   popup.value = new Popup()
-    .on('open', () => {
-      selectedFeatureName.value = name
-    })
-    .on('close', () => {
-      selectedFeatureName.value = ''
-    })
     .setLngLat(coordinates)
     .setHTML(popupElement.value.innerHTML)
     .addTo(map.value)
+
+  const btnSubmit = document.getElementById('vote-popup-btn-submit')
+  if (btnSubmit) {
+    btnSubmit.addEventListener('click', async () => {
+      console.log('CLICK -> ', {
+        isVote,
+        properties: feature.properties,
+      })
+      const coordinatesInProperties = JSON.parse(
+        feature.properties?.coordinates
+      )?.coordinates
+      if (isVote) {
+        // todo: handle submit vote
+        let payload = {
+          questionId: props.roomDetail.questionId,
+          coordinates: {
+            lng: coordinatesInProperties[0],
+            lat: coordinatesInProperties[1],
+          },
+          locationMetadata: {
+            placeName: feature.properties.placeName,
+            category: feature.properties.category,
+            displayAddress: feature.properties.address,
+          },
+        }
+        console.log('PAYLOAD -> ', payload)
+        btnSubmit.classList.add('is-loading')
+        await roomStore.submitVote(payload)
+        btnSubmit.classList.remove('is-loading')
+
+        popup.value?.remove()
+      } else {
+        // todo: handle submit unvote
+        let payload = {
+          questionId: props.roomDetail.questionId,
+          coordinates: {
+            lng: coordinatesInProperties[0],
+            lat: coordinatesInProperties[1],
+          },
+        }
+        console.log('PAYLOAD -> ', payload)
+        btnSubmit.classList.add('is-loading')
+        await roomStore.submitRemoveVote(payload)
+
+        btnSubmit.classList.remove('is-loading')
+        popup.value?.remove()
+      }
+    })
+  }
 })
 
 watch(
@@ -208,6 +251,14 @@ watch(
     loadMemberLayers()
   }
 )
+
+watch(
+  () => props.locations,
+  () => {
+    console.log('LOCATION CHANGES -> ', props.locations)
+    loadLocationLayers()
+  }
+)
 </script>
 
 <template>
@@ -216,12 +267,11 @@ watch(
       <div ref="mapElement" class="map-section"></div>
       <div ref="geocoderElement" class="geocoder"></div>
       <div ref="popupElement" style="display: none; visibility: hidden">
-        <MapMarker
+        <VotePopup
           v-if="selectedFeature"
-          :logo="selectedFeature.properties.logo"
-          :name="selectedFeature.properties.name"
-          :opening-count="selectedFeature.properties.openingCount"
-          :description="selectedFeature.properties.description"
+          :question-id="roomDetail.questionId"
+          :feature="selectedFeature"
+          :is-vote="isVote"
         />
       </div>
     </div>

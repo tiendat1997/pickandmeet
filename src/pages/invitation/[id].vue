@@ -24,18 +24,14 @@ const invitationInfo = computed(() => {
 watchPostEffect(() => {
   console.log('watchPostEffect -> ', props.coords)
   const invitationCode = route.params.id
-  if (
-    invitationCode &&
-    props.coords.longitude !== Infinity &&
-    props.coords.latitude !== Infinity
-  ) {
+  if (invitationCode && props.coords.longitude && props.coords.latitude) {
     console.log('current position change -> ', { coords: props.coords })
-    alert(
-      `current position change -> ${JSON.stringify({
-        longitude: props.coords.longitude,
-        latitude: props.coords.latitude,
-      })}`
-    )
+    // alert(
+    //   `current position change -> ${JSON.stringify({
+    //     longitude: props.coords.longitude,
+    //     latitude: props.coords.latitude,
+    //   })}`
+    // )
     invitationStore.fetchInvitationInfo(invitationCode)
   }
 })

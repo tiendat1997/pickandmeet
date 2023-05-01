@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 
 import { useApi } from '../composable/useApi'
 import axios from 'axios'
+
 export const useRoomStore = defineStore('room', {
   state: (): any => ({
     members: {},
@@ -32,31 +33,6 @@ export const useRoomStore = defineStore('room', {
       return Object.values(state.votes ?? {}) ?? []
     },
     getLocations(state) {
-      const features = (state.nearByLocations?.features ?? []).map((item: any) => {
-        return {
-          type: 'Feature',
-          properties: {
-            name: 'Fast Pizza',
-            logo: '/images/icons/logos/fastpizza.svg',
-            distance: 0.3,
-            openingCount: '6pm',
-            phone: '+1 555 456-5659',
-            website: 'https://huro.cssninja.io',
-            description:
-              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Memini me adesse meam.',
-            ...item.properties,
-          },
-          geometry: item.geometry,
-        }
-      })
-      const locations = {
-        type: 'FeatureCollection',
-        features: features,
-      }
-
-      return locations
-    },
-    getFeatures(state) {
       const existingVotes = state.getVotes
       const normalizeFeatures =
         state.nearByLocations?.features?.map((item: any) => {
@@ -65,35 +41,43 @@ export const useRoomStore = defineStore('room', {
           const foundVoteIndex = existingVotes.findIndex(
             (vote: any) => vote.longitude === longitude && vote.latitude === latitude
           )
-          let foundVote
+          let foundVote, userIds, userList, count
           if (foundVoteIndex > -1) {
             foundVote = existingVotes[foundVoteIndex]
             existingVotes.splice(foundVoteIndex, 1)
+            count = foundVote.count
+            userIds = foundVote.userIds
+            userList = foundVote.userList
           }
 
           return {
-            ...item,
-            count: foundVote ? foundVote.count : undefined,
-            userIds: foundVote ? foundVote.userIds : undefined,
-            userList: foundVote ? foundVote.userList : undefined,
-            coordinates: item.geometry.coordinates,
+            type: 'Feature',
             properties: {
               ...item.properties,
-              placeName: item.text,
-              displayAddress: item.properties.address,
+              placeName: item.place_name,
+              count: count,
+              userIds: userIds,
+              userList: userList,
+              coordinates: item.geometry,
             },
+            geometry: item.geometry,
           }
         }) ?? []
 
-      if (existingVotes.length > 0) {
-        existingVotes.forEach((vote: any) => {
-          normalizeFeatures.push({
-            ...vote,
-          })
-        })
-      }
+      // if (existingVotes.length > 0) {
+      //   existingVotes.forEach((vote: any) => {
+      //     normalizeFeatures.push({
+      //       ...vote,
+      //     })
+      //   })
+      // }
 
-      return normalizeFeatures ?? []
+      const locations = {
+        type: 'FeatureCollection',
+        features: normalizeFeatures,
+      }
+      console.log('gettingLocations -> ', locations)
+      return locations
     },
   },
   actions: {
