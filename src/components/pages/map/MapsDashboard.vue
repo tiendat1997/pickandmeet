@@ -4,8 +4,10 @@ import { useThemeColors } from '/@src/composable/useThemeColors'
 import { useDarkmode } from '/@src/stores/darkmode'
 import 'mapbox-gl/src/css/mapbox-gl.css'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
+import { createApp as createClientComponent } from 'vue'
 import { useRoomStore } from '/@src/stores/useRoom'
 import { useAuth0 } from '@auth0/auth0-vue'
+import VoteCountMarker from './VoteCountMarker.vue'
 
 const themeColors = useThemeColors()
 
@@ -14,6 +16,7 @@ const props = defineProps<{
   coords: any
   members: any[]
   locations: any[]
+  votes: any
   reversed?: boolean
 }>()
 
@@ -28,6 +31,7 @@ const map = shallowRef<Map>()
 const popup = shallowRef<Popup>()
 const geocoder = shallowRef<any>()
 const globalMemberMarkers: any = ref<any>({})
+const globalVoteLabels: any = ref<any>({})
 const isVote = ref<null | Boolean>(null)
 const { user } = useAuth0()
 
@@ -40,7 +44,7 @@ function loadMemberLayers() {
     console.log('generateMarkers -> ', memberLocation)
     const coordinates = memberLocation.geoJson.coordinates
     const memberId = memberLocation.uid
-    const isCurrent = false // getCurrentUserId.value === memberId // user.sub === memberLocation.uid;
+    const isCurrent = user.value.sub === memberLocation.uid
     const oldMarker = globalMemberMarkers[memberId]
 
     const marker = new Marker({
@@ -88,6 +92,25 @@ function loadLocationLayers() {
     },
   })
 
+  // Add a symbol layer
+  map.value.addLayer({
+    id: 'place_name',
+    type: 'symbol',
+    source: 'places',
+    // maxzoom: 24,
+    // minzoom: 13,
+    layout: {
+      // get the title name from the source's "title" property
+      'text-field': ['get', 'name'],
+      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+      // 'text-allow-overlap': true,
+      'text-offset': [0, 0.75],
+      'text-size': 12,
+      'text-anchor': 'top',
+      'icon-allow-overlap': true,
+    },
+  })
+
   map.value.on('click', 'places', (e: any) => {
     console.log('click -> ', e.features[0])
     selectedFeature.value = e.features[0]
@@ -115,6 +138,41 @@ function loadLocationLayers() {
   })
 }
 
+function loadVoteLayers() {
+  if (!map.value) {
+    return
+  }
+
+  const features: any[] = props.votes?.features ?? []
+  for (const voteFeature of features) {
+    // create a HTML element for each feature
+    const markerEl = document.createElement('div')
+    markerEl.className = 'marker'
+
+    const markerContent = document.createElement('div')
+    markerEl.appendChild(markerContent)
+
+    const coordinates = voteFeature.geometry.coordinates
+    const markerKey = String(coordinates[0]) + '_' + String(coordinates[1])
+    const oldMarker = globalVoteLabels[markerKey]
+    // make a marker for each feature and add it to the map
+    const marker = new Marker(markerEl, { anchor: 'top', offset: [0, -22] })
+      .setLngLat(coordinates)
+      .addTo(map.value)
+
+    // Remove old marker from the map
+    if (oldMarker) {
+      oldMarker.remove()
+    }
+
+    globalVoteLabels[markerKey] = marker
+
+    createClientComponent(VoteCountMarker, {
+      count: voteFeature.properties?.count ?? 0,
+    }).mount(markerContent)
+  }
+}
+
 onMounted(() => {
   Promise.all([
     import('mapbox-gl').then((m) => m.default),
@@ -134,7 +192,7 @@ onMounted(() => {
         ? 'mapbox://styles/mapbox/dark-v10'
         : 'mapbox://styles/mapbox/light-v10',
       center: [props.coords.longitude, props.coords.latitude],
-      zoom: 12,
+      zoom: 13,
     })
 
     geocoder.value = new MapboxGeocoder({
@@ -152,6 +210,7 @@ onMounted(() => {
 
         loadLocationLayers()
         loadMemberLayers()
+        loadVoteLayers()
       }
       loadingStyles()
     })
@@ -257,6 +316,14 @@ watch(
   () => {
     console.log('LOCATION CHANGES -> ', props.locations)
     loadLocationLayers()
+  }
+)
+
+watch(
+  () => props.votes,
+  () => {
+    console.log('VOTES CHANGES -> ', props.votes)
+    loadVoteLayers()
   }
 )
 </script>

@@ -1,6 +1,5 @@
 <template>
   <div class="marker-content">
-    <img src="/@src/assets/cafe-icon.png" alt="location-icon-img" />
     <VTag v-if="!!count" color="solid"
       >{{ count }} vote<span v-if="count > 1">s</span></VTag
     >
@@ -9,7 +8,7 @@
 
 <script lang="ts">
 export default {
-  name: 'MarkerContent',
+  name: 'VoteCountMarker',
   props: {
     count: Number,
   },

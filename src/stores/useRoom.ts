@@ -32,6 +32,27 @@ export const useRoomStore = defineStore('room', {
     getVotes(state) {
       return Object.values(state.votes ?? {}) ?? []
     },
+    getVoteFeatures(state) {
+      const normalizeVoteFeatures = (Object.values(state.votes ?? {}) ?? []).map(
+        (item: any) => {
+          return {
+            type: 'Feature',
+            properties: {
+              ...item.properties,
+              count: item.count,
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: item.coordinates,
+            },
+          }
+        }
+      )
+      return {
+        type: 'FeatureCollection',
+        features: normalizeVoteFeatures,
+      }
+    },
     getLocations(state) {
       const existingVotes = state.getVotes
       const normalizeFeatures =
@@ -59,6 +80,7 @@ export const useRoomStore = defineStore('room', {
               userIds: userIds,
               userList: userList,
               coordinates: item.geometry,
+              name: item.text,
             },
             geometry: item.geometry,
           }
@@ -115,6 +137,7 @@ export const useRoomStore = defineStore('room', {
             const userList = vote.userList ?? []
 
             this.votes = {
+              ...this.votes,
               [key]: {
                 count: vote.count,
                 latitude: vote.latitude,
@@ -132,12 +155,15 @@ export const useRoomStore = defineStore('room', {
         console.log(error)
       }
     },
-    async fetchNearByLocations(centerPosition: { latitude: number; longitude: number }) {
+    async fetchNearByLocations(
+      centerPosition: { latitude: number; longitude: number },
+      bounds: any
+    ) {
       const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string
-
+      console.log('bounds -> ', bounds)
       // const bbox = `${bounds._sw.lng},${bounds._sw.lat},${bounds._ne.lng},${bounds._ne.lat}`; // TODO: Not working with bbox
       const proximity = `${centerPosition.longitude},${centerPosition.latitude}`
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/coffee.json?proximity=${proximity}&access_token=${accessToken}&limit=100`
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/coffee.json?proximity=${proximity}&access_token=${accessToken}&limit=10&fuzzyMatch=true`
       console.log('Getting nearby location -> URL: ', url)
       const { data } = await axios.get(url)
       console.log('NearBy result: ', data)

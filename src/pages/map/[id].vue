@@ -27,6 +27,10 @@ const locations: any = computed(() => {
   return roomStore.getLocations
 })
 
+const voteFeatures: any = computed(() => {
+  return roomStore.getVoteFeatures
+})
+
 useHead({
   title: 'Maps 1 - Sidebar - Vuero',
 })
@@ -71,10 +75,13 @@ watch(members, async (newMembers: any) => {
 
   const centerBound = bounds.getCenter()
   console.log('center bound location -> ', centerBound)
-  await roomStore.fetchNearByLocations({
-    longitude: centerBound.lng,
-    latitude: centerBound.lat,
-  })
+  await roomStore.fetchNearByLocations(
+    {
+      longitude: centerBound.lng,
+      latitude: centerBound.lat,
+    },
+    bounds
+  )
 })
 
 onMounted(() => {
@@ -89,11 +96,11 @@ onMounted(() => {
     :locations="locations"
     :room-detail="roomDetail"
     :members="members"
+    :votes="voteFeatures"
   >
     <template #header>
       <div class="content-section-header">
         <h2 class="title is-4 is-narrow">Maps 1</h2>
-
         <Toolbar class="desktop-toolbar">
           <ToolbarNotification />
 

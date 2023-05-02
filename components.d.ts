@@ -101,6 +101,8 @@ declare module '@vue/runtime-core' {
     VModal: typeof import('./src/components/base/modal/VModal.vue')['default']
     VOptgroup: typeof import('./src/components/base/form/VOptgroup.vue')['default']
     VOption: typeof import('./src/components/base/form/VOption.vue')['default']
+    Vote: typeof import('./src/components/pages/map/Vote.vue')['default']
+    VoteCountMarker: typeof import('./src/components/pages/map/VoteCountMarker.vue')['default']
     VotePopup: typeof import('./src/components/pages/map/VotePopup.vue')['default']
     VPageContent: typeof import('./src/components/base/layouts/VPageContent.vue')['default']
     VPageContentWrapper: typeof import('./src/components/base/layouts/VPageContentWrapper.vue')['default']

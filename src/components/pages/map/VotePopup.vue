@@ -15,8 +15,11 @@ watchPostEffect(() => {
 
 <template>
   <div>
-    <h3>{{ feature.properties.placeName }}</h3>
+    <h3>
+      <b>{{ feature.properties.placeName }}</b>
+    </h3>
     <h4>{{ feature.properties.category }}</h4>
+    <h4>{{ feature.properties.count }} Votes</h4>
     <hr />
     <VButton v-if="isVote === true" id="vote-popup-btn-submit" raised color="primary"
       >Vote</VButton
